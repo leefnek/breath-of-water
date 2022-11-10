@@ -1,8 +1,6 @@
 let sound;
 let fft;
 
-const G = 300;
-
 function preload() {
   soundFormats("mp3", "ogg");
   sound = loadSound("./waves.mp3");
@@ -11,26 +9,31 @@ function preload() {
 function setup() {
   // canvas setting
   createCanvas(windowWidth, windowHeight);
+  angleMode(DEGREES);
   fft = new p5.FFT();
 }
 
 function draw() {
   background(palette.black);
   stroke(255);
-  //noFill();//안에 안채우게
+
+  translate(width / 2, height / 2);
 
   // 시간 영역에 따른 진폭값을 담은 배열
   const wave = fft.waveform();
 
-  beginShape();
-  for (let i = 0; i < width; i++) {
-    const index = floor(map(i, 0, width, 0, wave.length));
-
-    const x = i;
-    const y = wave[index] * G + height / 2;
-    vertex(x, y);
+  for (let times of [-1, 1]) {
+    beginShape();
+    for (let degree = 0; degree <= 180; degree++) {
+      const index = floor(map(degree, 0, width, 0, wave.length - 1));
+      //min and maximum radius of the circle
+      const r = map(wave[index], -1, 1, 150, 350);
+      const x = r * sin(degree) * times;
+      const y = r * cos(degree);
+      vertex(x, y);
+    }
+    endShape();
   }
-  endShape();
 }
 function mouseClicked() {
   if (sound.isPlaying()) {
