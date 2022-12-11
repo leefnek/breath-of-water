@@ -30,6 +30,7 @@ function setup() {
 }
 
 function draw() {
+  if (!sound.isPlaying()) return;
   const level = amplitude.getLevel();
 
   flying -= random(0.3, 0.6);
