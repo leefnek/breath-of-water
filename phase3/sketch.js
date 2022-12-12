@@ -1,64 +1,108 @@
-let sound,
-  fft,
-  peakDetect,
-  frame = 60;
-let a, b;
-
-let colorStep = 0;
+var frames = [];
+var frameCount = 0;
+var voltage = 0;
 
 function preload() {
-  soundFormats("m4a", "ogg");
   sound = loadSound("./phase3.m4a");
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  layer = createGraphics(windowWidth, windowHeight);
-  background("black");
-
+  cnv = createCanvas(windowWidth, windowHeight);
   fft = new p5.FFT();
-  peakDetect = new p5.PeakDetect(500, 1000, 0.35, 50);
-
-  a = 720 / (sound.duration() * frame);
-  b = a;
-
-  frameRate(frame);
+  background(0);
 }
 
 function draw() {
   if (!sound.isPlaying()) return;
-  translate(windowWidth / 2, windowHeight / 2);
+  var spectrum = fft.analyze();
 
-  var spectrumA = fft.analyze();
-  var spectrumB = spectrumA.reverse();
-  spectrumB.splice(0, 40);
-
-  rotate(radians(a));
-
-  fft.analyze();
-  peakDetect.update(fft);
-
-  if (peakDetect.isDetected) {
-    colorStep += 50;
-    console.log("hee");
-  }
-  for (let i = 0; i < spectrumB.length; i++) {
-    var amp = spectrumB[i];
-    strokeWeight(0.025 * spectrumB[i]);
-    stroke(
-      0,
-      (spectrumA[i] + colorStep + 10) % 255,
-      // map((spectrumA[i] + colorStep + 10) % 255, 0, 255, 100, 200),
-      map((colorStep + spectrumB[i]) % 255, 0, 255, 80, 255),
-      spectrumB[i] / 2
-    );
-    let spectrumStep = map(i, 0, spectrumB.length, 20, 400);
-
-    line(0, spectrumStep, 0, spectrumStep);
-    line(0, -spectrumStep, 0, -spectrumStep);
+  var frame = [];
+  var lastFrame = frames[frames.length - 1] || {};
+  var hasPeak = false;
+  for (var i = 0; i < spectrum.length; i += 10) {
+    var v = {
+      spec: spectrum[i],
+      value: spectrum[i],
+      index: frameCount,
+    };
+    hasPeak = hasPeak || v.value > 140;
+    frame.push(v);
   }
 
-  a += b;
+  frame.hasPeak = hasPeak && !lastFrame.hasPeak;
+  frames.push(frame);
+  if (frame.hasPeak) {
+    voltage++;
+  } else {
+    voltage -= 0.86;
+  }
+
+  // background(0, voltage * 1.01, voltage * 1.15, 100);
+  background(0, 0, voltage * 10, 100);
+  frames.forEach(function (frame) {
+    for (var i = 0; i < frame.length; i++) {
+      var v = frame[i];
+      var spent = frameCount - v.index;
+      var v1 = (v.value / (spent * 2 + 1)) * (frame.hasPeak ? 2 : 1);
+      var x = map(i, 0, frame.length, 0, width);
+      var h = -height + map(v.value, 0, 255, height, -height / 10);
+      //rect(x, height, width / spectrum.length, h );
+      strokeWeight(0.7);
+      var alpha = Math.max(255 - (spent * spent + 1), 0);
+      var col = color(
+        Math.min(255, 100 + spent * spent * 10),
+        Math.min(255, 140 + spent * spent * 10),
+        map(Math.min(255, v.value + spent * spent * 10), 0, 255, 100, 500),
+        alpha
+      );
+      stroke(col);
+      noFill();
+
+      if (frame.hasPeak && spent > 0) {
+        noStroke();
+        fill(col); // spectrum is green
+      }
+      if (random(100) > 80) {
+        // fill(col);
+        // rect(x2, y2, step * random(3), step * random(3));
+        ellipse(x + spent * spent * 3 + random(50), height + h, v1, v1);
+      } else {
+        var x = x + spent * spent * 2 + random(1000);
+        var y = height + h;
+        triangle(
+          x,
+          y,
+          x - random(20),
+          y - random(20),
+          x + random(20),
+          y + random(20)
+        );
+      }
+      // noFill();
+      var step = 30;
+      var x2 = Math.round((x + spent * spent * 3 + 60) / step) * step;
+      var y2 = Math.round((height + h) / step) * step;
+      var v2 = Math.round(v1 / step) * step;
+      var col2 = color(
+        Math.min(255, 10 + spent * spent),
+        Math.min(255, 14 + spent * spent),
+        map(spent * spent, 0, 255, 100, 500),
+        //map(Math.min(255, v.value), 0, 255, 100, 500),
+        alpha
+      );
+
+      stroke(col2);
+      if (random(100) > 80) {
+        rect(x2, y2, step * random(3), step * random(3));
+      }
+    }
+  });
+
+  // reduce waves
+  // var num = 30;
+  // if (frames.length > num) {
+  //   frames = frames.slice(frames.length - num, frames.length);
+  // }
 }
 
 function keyPressed() {
