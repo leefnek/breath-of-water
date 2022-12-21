@@ -37,7 +37,6 @@ function draw() {
     voltage -= 0.86;
   }
 
-  // background(0, voltage * 1.01, voltage * 1.15, 100);
   background(0, 0, voltage * 10, 100);
   frames.forEach(function (frame) {
     for (var i = 0; i < frame.length; i++) {
@@ -46,7 +45,6 @@ function draw() {
       var v1 = (v.value / (spent * 2 + 1)) * (frame.hasPeak ? 2 : 1);
       var x = map(i, 0, frame.length, 0, width);
       var h = -height + map(v.value, 0, 255, height, -height / 10);
-      //rect(x, height, width / spectrum.length, h );
       strokeWeight(0.7);
       var alpha = Math.max(255 - (spent * spent + 1), 0);
       var col = color(
@@ -60,11 +58,9 @@ function draw() {
 
       if (frame.hasPeak && spent > 0) {
         noStroke();
-        fill(col); // spectrum is green
+        fill(col);
       }
       if (random(100) > 80) {
-        // fill(col);
-        // rect(x2, y2, step * random(3), step * random(3));
         ellipse(x + spent * spent * 3 + random(50), height + h, v1, v1);
       } else {
         var x = x + spent * spent * 2 + random(1000);
@@ -78,7 +74,7 @@ function draw() {
           y + random(20)
         );
       }
-      // noFill();
+
       var step = 30;
       var x2 = Math.round((x + spent * spent * 3 + 60) / step) * step;
       var y2 = Math.round((height + h) / step) * step;
@@ -87,7 +83,6 @@ function draw() {
         Math.min(255, 10 + spent * spent),
         Math.min(255, 14 + spent * spent),
         map(spent * spent, 0, 255, 100, 500),
-        //map(Math.min(255, v.value), 0, 255, 100, 500),
         alpha
       );
 
@@ -97,12 +92,6 @@ function draw() {
       }
     }
   });
-
-  // reduce waves
-  // var num = 30;
-  // if (frames.length > num) {
-  //   frames = frames.slice(frames.length - num, frames.length);
-  // }
 }
 
 function keyPressed() {

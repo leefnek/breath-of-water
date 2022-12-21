@@ -1,5 +1,6 @@
 let sound, fft, peakDetect;
-let t = 0;
+
+let time = 0;
 let colorStep = 0;
 let noiseValue = 0.4;
 const particles = [];
@@ -11,16 +12,19 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  background(0);
   fft = new p5.FFT();
   peakDetect = new p5.PeakDetect(800, 1000, 0.35, 50);
 }
 
 function draw(_) {
+  if (!sound.isPlaying()) return;
   translate(windowWidth / 2, windowHeight / 2);
+
+  // particles
   var p = new Particle();
   particles.push(p);
 
-  // background(0);
   for (let i in particles) {
     const particle = particles[i];
     particle.update();
@@ -29,32 +33,33 @@ function draw(_) {
       particles.splice(i, 1);
     }
   }
+  // vertexes
+
+  fft.analyze();
+  peakDetect.update(fft);
+  if (peakDetect.isDetected) {
+    colorStep += 130;
+  }
 
   const W = 720;
   rectMode(RADIUS);
-  t += 0.005;
+  time += 0.005;
   noFill();
   colorMode(HSB);
   B = blendMode;
   B(BLEND);
   background(0, 0.03);
   B(ADD);
-  fft.analyze();
-  peakDetect.update(fft);
-  if (peakDetect.isDetected) {
-    console.log("he");
-    colorStep += 130;
-  }
   beginShape(QUADS);
   for (let i = W; i; i--) {
     stroke(
-      map((noise(i / W - t) * W + colorStep) % 360, 0, 360, 180, 260),
+      map((noise(i / W - time) * W + colorStep) % 360, 0, 360, 180, 260),
       70,
       W,
       0.2
     );
     vertex(
-      (cos((R = (i * PI) / 6 + noise(i / W - t) * 20)) * i) / 2,
+      (cos((R = (i * PI) / 6 + noise(i / W - time) * 20)) * i) / 2,
       (sin(R) * i) / 2
     );
   }

@@ -1,11 +1,8 @@
 let sound, amplitude;
 let cols, rows;
 let scl = 20;
-let w;
-let h;
 
-let flying = 0;
-
+let randomValue = 0;
 let terrain = [];
 
 function preload() {
@@ -16,10 +13,8 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
   amplitude = new p5.Amplitude();
-  w = width;
-  h = height;
-  cols = parseInt(w / scl);
-  rows = parseInt(h / scl + 15);
+  cols = parseInt(width / scl);
+  rows = parseInt(height / scl + 15);
 
   for (var x = 0; x < cols; x++) {
     terrain[x] = [];
@@ -33,8 +28,8 @@ function draw() {
   if (!sound.isPlaying()) return;
   const level = amplitude.getLevel();
 
-  flying -= random(0.3, 0.6);
-  var yoff = flying;
+  randomValue -= random(0.3, 0.6);
+  var yoff = randomValue;
   var xoff;
 
   for (var y = 1; y < rows; y++) {
@@ -57,7 +52,7 @@ function draw() {
   translate(0, -370);
   rotateX(PI / 5);
   frameRate(10);
-  translate(-w / 2, -h / 2);
+  translate(-width / 2, -height / 2);
   for (var y = 0; y < rows - 1; y++) {
     beginShape(TRIANGLE_STRIP);
 
